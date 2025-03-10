@@ -1,4 +1,6 @@
 from recordMessages import *
+from datetime import datetime
+
 # Message Type List
 RSPMessageTypeList = [""] * 104
 RSPMessageTypeList.insert(1, "GTTOW")
@@ -22,6 +24,36 @@ RSPMessageTypeList.insert(26, "GTVGL")
 RSPMessageTypeList.insert(103, "GTRTI")
 
 rspGenericEventGroup = ["GTTOW","GTAIS","GTDIS","GTIOB","GTSPD","GTRTL","GTDOG","GTIGL","GTVGL","GTHBM","GTEPS"]
+
+
+last_send_time = None
+
+def calcular_diferenca_tempo(send_time):
+    """
+    Calcula a diferença de tempo entre a última e a nova mensagem GTFRI considerando o mesmo imei
+    """
+    global last_send_time
+    #i = send_time
+    # Converter send_time de HEX para datetime
+    dia = int(send_time[6:8], 16)
+    mes = int(send_time[4:6], 16)
+    ano = int(send_time[0:4], 16)
+    hora = int(send_time[8:10], 16)
+    minuto = int(send_time[10:12], 16)
+    segundo = int(send_time[12:14], 16)
+
+    new_time = datetime(ano, mes, dia, hora, minuto, segundo)
+
+    if  last_send_time is not None:
+        diff = (new_time - last_send_time).total_seconds()
+        print(f"Diferença de tempo: {diff} segundos")
+    else:
+        print(f"Primeira ocorrência, sem diferença de tempo.")
+
+    # Atualiza o último tempo de envio do IMEI
+    last_send_time = new_time
+    
+#    return diff
 
 def parse_rsp_message(d,decoded_file_name,log_flag):
     print("Group: Position Related Report")
@@ -213,8 +245,8 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
             p += 2
             battery_level = int(d[p:p + 2], 16)
             p += 2
-            external_power_voltage = int(d[p:p + 4], 16)
-            p += 4
+            # external_power_voltage = int(d[p:p + 4], 16)
+            # p += 4
             analog_input_mode = d[p:p + 4]
             p += 4
             #analog_input1_voltage = d[p:p + 4]
@@ -274,6 +306,7 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
             send_time = d[p:p + 14]
             p += 14
 
+            
             print("Report Mask: " + report_mask)
             #print("Device Type: " + device_type)
             #print("Protocol Version: " + protocol_version)
@@ -283,7 +316,7 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
                     str(int(unique_id7, 16)) + str(int(unique_id8, 16)))
             print("Unique ID: " + imei)
             print("Battery Level: ", battery_level)
-            print("External Power Voltage: ", external_power_voltage)
+            # print("External Power Voltage: ", external_power_voltage)
             print("Analog Input Mode: " + analog_input_mode)
             #print("Analog Input1 Voltage: " + analog_input1_voltage)  Não tem!
             print("Digital Input Status: " + digital_input_status)
@@ -316,18 +349,26 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
                 "Send Time: " + send_time + f" | {dia.zfill(2)}/{mes.zfill(2)}/{ano} | {hora.zfill(2)}:{min.zfill(2)}:"
                                             f"{seg.zfill(2)}")
 
+            # Chamar a função de comparação de tempo
+            calcular_diferenca_tempo(send_time)
+
+          #  print("Diferença de tempo: ", calcular_diferenca_tempo())
+          #  print(f"diferença é: ", calcular_diferenca_tempo)
             if log_flag == 1:
                 record_decoded(decoded_file_name, f"{dia.zfill(2)}/{mes.zfill(2)}/{ano},{hora.zfill(2)}:"
                                               f"{min.zfill(2)}:{seg.zfill(2)},{imei},0x{count_number},"
                                               f"{RSPMessageTypeList[int(message_type, 16)]},"
                                               f"0x{report_mask},{device_type},0x{protocol_version},0x{firmware_version},"
-                                              f"{battery_level},{external_power_voltage},{analog_input_mode},-,"
+                                              f"{battery_level},-,{analog_input_mode},-,"
                                               f"{digital_input_status},{digital_output_status},"
                                               f"{motion_status},{satellites_in_use},-,"
                                               f"{gnss_accuracy},{speed},{azimuth},0x{altitude},"
                                               f"{latitude_final},{longitude_final},"
                                               f"{gnss_utc_time},{mcc},{mnc},{lac},{cell_id},0x{current_mileage},"
                                               f"0x{total_mileage},0x{current_hour_meter_count},0x{total_hour_meter_count},-,-")
+
+        
+
 
         else:
             if log_flag == 1:
