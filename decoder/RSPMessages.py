@@ -18,7 +18,6 @@ RSPMessageTypeList.insert(15, "GTHBM")
 RSPMessageTypeList.insert(16, "GTIGL")
 RSPMessageTypeList.insert(17, "GTIDA")
 RSPMessageTypeList.insert(18, "GTERI")
-RSPMessageTypeList.insert(20, "GTGIN")
 RSPMessageTypeList.insert(21, "GTGOT")
 RSPMessageTypeList.insert(26, "GTVGL")
 RSPMessageTypeList.insert(103, "GTRTI")
@@ -26,7 +25,9 @@ RSPMessageTypeList.insert(103, "GTRTI")
 rspGenericEventGroup = ["GTTOW","GTAIS","GTDIS","GTIOB","GTSPD","GTRTL","GTDOG","GTIGL","GTVGL","GTHBM","GTEPS"]
 
 
-last_send_time = None
+
+import global_state
+
 
 def calcular_diferenca_tempo(send_time):
     """
@@ -44,16 +45,20 @@ def calcular_diferenca_tempo(send_time):
 
     new_time = datetime(ano, mes, dia, hora, minuto, segundo)
 
-    if  last_send_time is not None:
-        diff = (new_time - last_send_time).total_seconds()
+    if global_state.last_send_time is not None:
+        diff = (new_time - global_state.last_send_time).total_seconds()
         print(f"Diferença de tempo: {diff} segundos")
     else:
-        print(f"Primeira ocorrência, sem diferença de tempo.")
+        print("Primeira ocorrência, sem diferença de tempo.")
+        diff = None
 
-    # Atualiza o último tempo de envio do IMEI
-    last_send_time = new_time
+
+    # Atualiza o tempo global
+    global_state.last_send_time = new_time
     
-#    return diff
+    return diff
+    
+
 
 def parse_rsp_message(d,decoded_file_name,log_flag):
     print("Group: Position Related Report")
@@ -350,8 +355,8 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
                                             f"{seg.zfill(2)}")
 
             # Chamar a função de comparação de tempo
-            calcular_diferenca_tempo(send_time)
-
+            diff = calcular_diferenca_tempo(send_time)  # Chama a função e armazena o retorno
+            print(f"diff", diff)
           #  print("Diferença de tempo: ", calcular_diferenca_tempo())
           #  print(f"diferença é: ", calcular_diferenca_tempo)
             if log_flag == 1:
@@ -365,7 +370,7 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
                                               f"{gnss_accuracy},{speed},{azimuth},0x{altitude},"
                                               f"{latitude_final},{longitude_final},"
                                               f"{gnss_utc_time},{mcc},{mnc},{lac},{cell_id},0x{current_mileage},"
-                                              f"0x{total_mileage},0x{current_hour_meter_count},0x{total_hour_meter_count},-,-")
+                                              f"0x{total_mileage},0x{current_hour_meter_count},0x{total_hour_meter_count},-,-, {diff} ")
 
         
 
