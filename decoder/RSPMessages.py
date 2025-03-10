@@ -25,13 +25,12 @@ RSPMessageTypeList.insert(103, "GTRTI")
 rspGenericEventGroup = ["GTTOW","GTAIS","GTDIS","GTIOB","GTSPD","GTRTL","GTDOG","GTIGL","GTVGL","GTHBM","GTEPS"]
 
 
-
 import global_state
 
 
 def calcular_diferenca_tempo(send_time):
     """
-    Calcula a diferença de tempo entre a última e a nova mensagem GTFRI considerando o mesmo imei
+    Calcula a diferença de tempo entre a última e a nova mensagem GTFRI 
     """
     global last_send_time
     #i = send_time
@@ -47,7 +46,7 @@ def calcular_diferenca_tempo(send_time):
 
     if global_state.last_send_time is not None:
         diff = (new_time - global_state.last_send_time).total_seconds()
-        print(f"Diferença de tempo: {diff} segundos")
+        # print(f"Diferença de tempo: {diff} segundos")
     else:
         print("Primeira ocorrência, sem diferença de tempo.")
         diff = None
@@ -61,6 +60,7 @@ def calcular_diferenca_tempo(send_time):
 
 
 def parse_rsp_message(d,decoded_file_name,log_flag):
+
     print("Group: Position Related Report")
     size = len(d)
     message_type = d[8:10]
@@ -353,12 +353,27 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
             print(
                 "Send Time: " + send_time + f" | {dia.zfill(2)}/{mes.zfill(2)}/{ano} | {hora.zfill(2)}:{min.zfill(2)}:"
                                             f"{seg.zfill(2)}")
+            
 
-            # Chamar a função de comparação de tempo
-            diff = calcular_diferenca_tempo(send_time)  # Chama a função e armazena o retorno
-            print(f"diff", diff)
-          #  print("Diferença de tempo: ", calcular_diferenca_tempo())
-          #  print(f"diferença é: ", calcular_diferenca_tempo)
+            diff = calcular_diferenca_tempo(send_time)
+            diffON = None
+            diffOFF = None
+
+            motion_status_var = str(motion_status)  # Converte para string
+            print(f"motion: ", motion_status_var)
+            # Pegar apenas o primeiro caractere do motion_status
+            motion_prefix = motion_status_var[0] if len(motion_status_var) > 0 else None
+
+            
+            if motion_prefix == "2":  
+                diffON = diff  # Chama a função e armazena o retorno
+                print(f"Veículo ligado (IGN), diferença de tempo: {diffON} segundos")
+
+            elif motion_prefix == "1":  # Veículo desligado (IGF)
+                diffOFF = diff
+                print(f"Veículo desligado (IGF), diferença de tempo: {diffOFF} segundos")
+
+   
             if log_flag == 1:
                 record_decoded(decoded_file_name, f"{dia.zfill(2)}/{mes.zfill(2)}/{ano},{hora.zfill(2)}:"
                                               f"{min.zfill(2)}:{seg.zfill(2)},{imei},0x{count_number},"
@@ -370,7 +385,7 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
                                               f"{gnss_accuracy},{speed},{azimuth},0x{altitude},"
                                               f"{latitude_final},{longitude_final},"
                                               f"{gnss_utc_time},{mcc},{mnc},{lac},{cell_id},0x{current_mileage},"
-                                              f"0x{total_mileage},0x{current_hour_meter_count},0x{total_hour_meter_count},-,-, {diff} ")
+                                              f"0x{total_mileage},0x{current_hour_meter_count},0x{total_hour_meter_count},-,-, {diffON}, {diffOFF} ")
 
         
 

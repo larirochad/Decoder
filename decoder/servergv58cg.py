@@ -100,7 +100,7 @@ if logDecision == 1:
                     "Digital Output Status,Motion Status,Satélites,Duração da Ignição,Precisão GNSS,"
                     "Velocidade,Azimuth,Altitude,Latitude,Longitude,GNSS UTC Time,MCC,MNC,LAC,Cell ID,"
                     "Hodômetro Atual,Hodômetro Total,Horímetro Atual,Horímetro Total,Motivo Power Off,"
-                    "Motivo Power On, Diferença dos tempos de FRI\n")
+                    "Motivo Power On, Diferença dos tempos a partir do IGN, Diferença de tempos a partir do IGF\n")
             d.close()
 
 print("Server iniciado no IP {} e porta {}".format(server_ip,server_port))

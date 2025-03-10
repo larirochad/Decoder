@@ -51,23 +51,15 @@ EVTMessageTypeList.insert(88,"GTHUM")
 
 evtGenericEventGroup = ["GTPNA","GTPFA","GTMPN","GTMPF","GTBTC","GTSTC","GTSTT","GTPDP","GTIDN","GTSTR","GTSTP","GTLSP"]
 
+
+
 def parse_evt_message(d,decoded_file_name,log_flag):
     print("Group: Event Report")
     size = len(d)
     message_type = d[8:10]
-    event_name = int(message_type, 16)
-    print("evento: ", event_name)
     count_number = d[size - 12:(size - 8) - size]
     print("Message Type: " + message_type + " -> " + EVTMessageTypeList[int(message_type, 16)])
     msg = "+SACK:" + count_number + "$"
-   
-   
-    # Se for GTIGN ou GTIGF, reseta o contador de tempo
-    if event_name == 14 or event_name == 13:
-        print("Comando GTIGN ou GTIGF recebido. Zerando last_send_time.")
-        global_state.last_send_time = None  # Zera o tempo global
-
-        
 
 
     if EVTMessageTypeList[int(message_type, 16)] in evtGenericEventGroup:
