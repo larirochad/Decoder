@@ -1,7 +1,5 @@
 from recordMessages import *
 
-import global_state
-
 # Message Type List
 EVTMessageTypeList = [""] * 89
 EVTMessageTypeList.insert(1,"GTPNA")

@@ -25,14 +25,14 @@ RSPMessageTypeList.insert(103, "GTRTI")
 rspGenericEventGroup = ["GTTOW","GTAIS","GTDIS","GTIOB","GTSPD","GTRTL","GTDOG","GTIGL","GTVGL","GTHBM","GTEPS"]
 
 
-import global_state
+last_send_time = None
 
 
 def calcular_diferenca_tempo(send_time):
     """
     Calcula a diferença de tempo entre a última e a nova mensagem GTFRI 
     """
-    global last_send_time
+    global last_send_time 
     #i = send_time
     # Converter send_time de HEX para datetime
     dia = int(send_time[6:8], 16)
@@ -44,8 +44,8 @@ def calcular_diferenca_tempo(send_time):
 
     new_time = datetime(ano, mes, dia, hora, minuto, segundo)
 
-    if global_state.last_send_time is not None:
-        diff = (new_time - global_state.last_send_time).total_seconds()
+    if last_send_time is not None:
+        diff = (new_time - last_send_time).total_seconds()
         # print(f"Diferença de tempo: {diff} segundos")
     else:
         print("Primeira ocorrência, sem diferença de tempo.")
@@ -53,7 +53,7 @@ def calcular_diferenca_tempo(send_time):
 
 
     # Atualiza o tempo global
-    global_state.last_send_time = new_time
+    last_send_time = new_time
     
     return diff
     
@@ -373,7 +373,11 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
                 diffOFF = diff
                 print(f"Veículo desligado (IGF), diferença de tempo: {diffOFF} segundos")
 
-   
+            # Certifique-se de que 'diffON' e 'diffOFF' tenham um valor antes de usá-los
+            diffON = diffON if diffON is not None else "-"
+            diffOFF = diffOFF if diffOFF is not None else "-"
+
+
             if log_flag == 1:
                 record_decoded(decoded_file_name, f"{dia.zfill(2)}/{mes.zfill(2)}/{ano},{hora.zfill(2)}:"
                                               f"{min.zfill(2)}:{seg.zfill(2)},{imei},0x{count_number},"
