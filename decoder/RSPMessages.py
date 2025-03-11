@@ -250,8 +250,8 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
             p += 2
             battery_level = int(d[p:p + 2], 16)
             p += 2
-            # external_power_voltage = int(d[p:p + 4], 16)
-            # p += 4
+            external_power_voltage = int(d[p:p + 4], 16)
+            p += 4
             analog_input_mode = d[p:p + 4]
             p += 4
             #analog_input1_voltage = d[p:p + 4]
