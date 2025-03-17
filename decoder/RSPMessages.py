@@ -25,6 +25,7 @@ RSPMessageTypeList.insert(103, "GTRTI")
 rspGenericEventGroup = ["GTTOW","GTAIS","GTDIS","GTIOB","GTSPD","GTRTL","GTDOG","GTIGL","GTVGL","GTHBM","GTEPS"]
 
 
+
 last_send_time = None
 
 
@@ -163,37 +164,44 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
         p+=14
 
         print("Report Mask: " + report_mask)
-        #print("Device Type: " + device_type)
-        #print("Protocol Version: " + protocol_version)
-        #print("Firmware Version: " + firmware_version)
+        print("Device Type: " + device_type)
+        print("Protocol Version: " + protocol_version)
+        print("Firmware Version: " + firmware_version)
         imei = (str(int(unique_id1, 16)) + str(int(unique_id2, 16)) + str(int(unique_id3, 16)) +
                 str(int(unique_id4, 16)) + str(int(unique_id5, 16)) + str(int(unique_id6, 16)) +
                 str(int(unique_id7, 16)) + str(int(unique_id8, 16)))
         print("Unique ID: " + imei)
         print("Battery Level: ", battery_level)
         print("External Power Voltage: ", external_power_voltage)
-        #print("Analog Input Mode: " + analog_input_mode)
-        #print("Analog Input1 Voltage: " + analog_input1_voltage)
-        #print("Digital Input Status: " + digital_input_status)
-        #print("Digital Output Status: " + digital_output_status)
-        #print("Motion Status: " + motion_status)
-        #print("Satellites in Use: " + satellites_in_use)
-        #print("Number: " + number)
-        #print("GNSS Accuracy: " + gnss_accuracy)
-        #print("Speed: " + speed)
-        #print("Azimuth: " + azimuth)
-        #print("Altitude: " + altitude)
-        #print("Longitude: " + longitude)
-        #print("Latitude: " + latitude)
-        #print("GNSS UTC Time: " + gnss_utc_time)
-        #print("MCC: " + mcc)
-        #print("MNC: " + mnc)
-        #print("LAC: " + lac)
-        #print("Cell ID: " + cell_id)
-        #print("Current Mileage: " + current_mileage)
-        #print("Total Mileage: " + total_mileage)
-        #print("Current Hour Meter Count: " + current_hour_meter_count)
-        #print("Total Hour Meter Count: " + total_hour_meter_count)
+        print("Analog Input Mode: " + analog_input_mode)
+        print("Analog Input1 Voltage: " + analog_input1_voltage)
+        print("Digital Input Status: " + digital_input_status)
+        print("Digital Output Status: " + digital_output_status)
+        print("Motion Status: " + motion_status)
+        print("Satellites in Use: " + satellites_in_use)
+        print("Number: " + number)
+        print("GNSS Accuracy: " + gnss_accuracy)
+        dia1 = (int(gnss_utc_time[6:8], 16))
+        mes1 = (int(gnss_utc_time[4:6], 16))
+        ano1 = (int(gnss_utc_time[0:4], 16))
+        hora1 = (int(gnss_utc_time[8:10], 16))
+        min1 = (int(gnss_utc_time[10:12], 16))
+        seg1 = (int(gnss_utc_time[12:14], 16))
+        print("Speed: " + speed)
+        print("Azimuth: " + azimuth)
+        print("Altitude: " + altitude)
+        print("Longitude: " + longitude)
+        print("Latitude: " + latitude)
+        print("GNSS UTC Time: " + gnss_utc_time)
+
+        print("MCC: " + mcc)
+        print("MNC: " + mnc)
+        print("LAC: " + lac)
+        print("Cell ID: " + cell_id)
+        print("Current Mileage: " + current_mileage)
+        print("Total Mileage: " + total_mileage)
+        print("Current Hour Meter Count: " + current_hour_meter_count)
+        print("Total Hour Meter Count: " + total_hour_meter_count)
         dia = str(int(send_time[6:8],16))
         mes = str(int(send_time[4:6],16))
         ano = str(int(send_time[0:4],16))
@@ -202,6 +210,19 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
         seg = str(int(send_time[12:14],16))
         print("Send Time: " + send_time + f" | {dia.zfill(2)}/{mes.zfill(2)}/{ano} | {hora.zfill(2)}:{min.zfill(2)}:"
                                           f"{seg.zfill(2)}")
+    
+        try:
+            if ano1 == 0:
+                print("Ignorando fix e seguindo o fluxo...")
+                Time_fix = None 
+            else:
+                Time_fix = datetime(ano1, mes1, dia1, hora1, min1, seg1)
+        except ValueError as e:
+            print(f"Erro ao criar Time_fix: {e}")
+            Time_fix = None  # Se houver erro, define como None e continua o fluxo
+            
+
+
 
         if log_flag == 1:
             record_decoded(decoded_file_name, f"{dia.zfill(2)}/{mes.zfill(2)}/{ano},{hora.zfill(2)}:"
@@ -214,7 +235,7 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
                                           f"{gnss_accuracy},{speed},{azimuth},0x{altitude},"
                                           f"{latitude_final},{longitude_final},"
                                           f"{gnss_utc_time},{mcc},{mnc},{lac},{cell_id},0x{current_mileage},"
-                                          f"0x{total_mileage},0x{current_hour_meter_count},0x{total_hour_meter_count},-,-")
+                                          f"0x{total_mileage},0x{current_hour_meter_count},0x{total_hour_meter_count},-,-,-,-,{Time_fix}")
 
     else:
         print("Formato Específico")
@@ -250,8 +271,8 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
             p += 2
             battery_level = int(d[p:p + 2], 16)
             p += 2
-            external_power_voltage = int(d[p:p + 4], 16)
-            p += 4
+            # external_power_voltage = int(d[p:p + 4], 16)
+            # p += 4
             analog_input_mode = d[p:p + 4]
             p += 4
             #analog_input1_voltage = d[p:p + 4]
@@ -336,6 +357,16 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
             print("Longitude: " + longitude_final)
             print("Latitude: " + latitude_final)
             print("GNSS UTC Time: " + gnss_utc_time)
+            dia1 = (int(gnss_utc_time[6:8], 16))
+            mes1 = (int(gnss_utc_time[4:6], 16))
+            ano1 = (int(gnss_utc_time[0:4], 16))
+            hora1 = (int(gnss_utc_time[8:10], 16))
+            min1 = (int(gnss_utc_time[10:12], 16))
+            seg1 = (int(gnss_utc_time[12:14], 16))
+            # seg_fix = (int(gnss_utc_time[12:14]))
+            # print(
+            #     "Time fix: " + gnss_utc_time + f" | {dia.zfill(2)}/{mes.zfill(2)}/{ano} | {hora.zfill(2)}:{min.zfill(2)}:"
+            #                                 f"{seg.zfill(2)}")
             print("MCC: " + mcc)
             print("MNC: " + mnc)
             print("LAC: " + lac)
@@ -364,19 +395,28 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
             # Pegar apenas o primeiro caractere do motion_status
             motion_prefix = motion_status_var[0] if len(motion_status_var) > 0 else None
 
-            
-            if motion_prefix == "2":  
-                diffON = diff  # Chama a função e armazena o retorno
-                print(f"Veículo ligado (IGN), diferença de tempo: {diffON} segundos")
-
-            elif motion_prefix == "1":  # Veículo desligado (IGF)
-                diffOFF = diff
-                print(f"Veículo desligado (IGF), diferença de tempo: {diffOFF} segundos")
-
-            # Certifique-se de que 'diffON' e 'diffOFF' tenham um valor antes de usá-los
             diffON = diffON if diffON is not None else "-"
             diffOFF = diffOFF if diffOFF is not None else "-"
 
+            if motion_prefix == "2":  
+                diffON = diff  
+                print(f"IGN: diferença de tempo: {diffON} segundos")
+
+            elif motion_prefix == "1":  # Veículo desligado (IGF)
+                diffOFF = diff
+                print(f"IGF: diferença de tempo: {diffOFF} segundos")
+
+          
+
+            try:
+                if ano1 == 0:
+                    print("Ignorando fix e seguindo o fluxo...")
+                    Time_fix = None 
+                else:
+                    Time_fix = datetime(ano1, mes1, dia1, hora1, min1, seg1)
+            except ValueError as e:
+                print(f"Erro ao criar Time_fix: {e}")
+                Time_fix = None  # Se houver erro, define como None e continua o fluxo
 
             if log_flag == 1:
                 record_decoded(decoded_file_name, f"{dia.zfill(2)}/{mes.zfill(2)}/{ano},{hora.zfill(2)}:"
@@ -389,7 +429,7 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
                                               f"{gnss_accuracy},{speed},{azimuth},0x{altitude},"
                                               f"{latitude_final},{longitude_final},"
                                               f"{gnss_utc_time},{mcc},{mnc},{lac},{cell_id},0x{current_mileage},"
-                                              f"0x{total_mileage},0x{current_hour_meter_count},0x{total_hour_meter_count},-,-, {diffON}, {diffOFF} ")
+                                              f"0x{total_mileage},0x{current_hour_meter_count},0x{total_hour_meter_count},-,-, {diffON}, {diffOFF}, {Time_fix} ")
 
         
 

@@ -6,7 +6,7 @@ from recordMessages import *
 import threading
 import socket
 import binascii
-import datetime
+from datetime import datetime
 import ifaddr
 import os
 
@@ -40,22 +40,61 @@ def worker():
 adapters = ifaddr.get_adapters()
 server_ip = 0
 
+config_file = "C:\\Users\\Larissa Rocha\\Documents\\GitHub\\Decoder\\decoder\\config.txt"
+
+# Função para carregar configurações do arquivo config.txt
+def carregar_configuracao(arquivo):
+    configuracoes = {}
+    if os.path.exists(arquivo):
+        with open(arquivo, "r") as f:
+            for linha in f:
+                if "=" in linha:
+                    chave, valor = linha.strip().split("=", 1)
+                    configuracoes[chave] = valor
+    return configuracoes
+
+# Nome do arquivo de configuração
+config = carregar_configuracao(config_file)
+
+# Verificar se a VPN está ativa
+server_ip = 0  # Valor padrão
 for adapter in adapters:
     if adapter.nice_name == "SonicWall_NetExtender_SSL Tunnel":
         server_ip = adapter.ips[1].ip
         print("VPN está ativa no IP {}".format(server_ip))
+
 if server_ip == 0:
     print("VPN não está ativada.")
     exit()
 
-if debug == 0:
+# Obter a porta do arquivo de configuração ou solicitar ao usuário
+if "server_port" in config:
+    server_port = int(config["server_port"])
+    print(f"Porta carregada do arquivo: {server_port}")
+else:
     server_port = int(input("Digite a porta de comunicação: "))
     if server_port > 65535 or server_port < 0:
         print("Porta inválida")
         exit()
-else:
-    server_port = 9116
-    #server_port = 10000
+
+
+
+# for adapter in adapters:
+#     if adapter.nice_name == "SonicWall_NetExtender_SSL Tunnel":
+#         server_ip = adapter.ips[1].ip
+#         print("VPN está ativa no IP {}".format(server_ip))
+# if server_ip == 0:
+#     print("VPN não está ativada.")
+#     exit()
+
+# if debug == 0:
+#     server_port = int(input("Digite a porta de comunicação: "))
+#     if server_port > 65535 or server_port < 0:
+#         print("Porta inválida")
+#         exit()
+# else:
+#     server_port = 9117
+#     #server_port = 10000
 
 log_directory = "logs/"
 os.makedirs(log_directory, exist_ok=True)  # Cria a pasta se não existir
@@ -68,9 +107,9 @@ if sem_log == 0:
         payload_file_name = ""
         decoded_file_name = ""
     else:
-        val = input("Digite o nome do arquivo de log a ser criado: ")
-        payload_file_name = os.path.join(log_directory, val + "_raw.csv")
-        decoded_file_name = os.path.join(log_directory, val + "_decoded.csv")
+        #val = input("Digite o nome do arquivo de log a ser criado: ")
+        payload_file_name = os.path.join(log_directory, "ttff_raw.csv")
+        decoded_file_name = os.path.join(log_directory, "ttff_decoded.csv")
         #payload_file_name = "log_raw.csv"
 else:
     logDecision = 0
@@ -100,7 +139,7 @@ if logDecision == 1:
                     "Digital Output Status,Motion Status,Satélites,Duração da Ignição,Precisão GNSS,"
                     "Velocidade,Azimuth,Altitude,Latitude,Longitude,GNSS UTC Time,MCC,MNC,LAC,Cell ID,"
                     "Hodômetro Atual,Hodômetro Total,Horímetro Atual,Horímetro Total,Motivo Power Off,"
-                    "Motivo Power On, Diferença dos tempos a partir do IGN, Diferença de tempos a partir do IGF\n")
+                    "Motivo Power On, Diferença dos tempos a partir do IGN, Diferença de tempos a partir do IGF, Time fix\n")
             d.close()
 
 print("Server iniciado no IP {} e porta {}".format(server_ip,server_port))
@@ -112,7 +151,7 @@ while True:
     data = binascii.hexlify(message).decode()
     #size = len(data)
     #print(size)
-    curr_time = datetime.datetime.now()
+    curr_time = datetime.now()
     date_time = curr_time.strftime("%d/%m/%Y,%H:%M:%S,")
     print("\n")
     print(date_time + "D," + data)

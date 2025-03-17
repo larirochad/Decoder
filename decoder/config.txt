@@ -1,0 +1,4 @@
+server_port=9117
+sem_log=0
+payload_file=meu_log_raw.csv
+decoded_file=meu_log_decoded.csv
