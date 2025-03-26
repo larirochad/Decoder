@@ -1,4 +1,5 @@
 server_port=9117
 sem_log=0
-payload_file=meu_log_raw.csv
-decoded_file=meu_log_decoded.csv
+payload_file=teste_30min_casa_payload.csv
+decoded_file=teste_30min_casa_decoded.csv
+

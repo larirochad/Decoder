@@ -2,6 +2,7 @@ from RSPMessages import *
 from INFMessages import *
 from EVTMessages import *
 from recordMessages import *
+import inquirer
 
 import threading
 import socket
@@ -37,85 +38,108 @@ def worker():
 # D: Enviado pelo Device
 # S: Enviado pelo Server
 
+opcao = inquirer.prompt([
+    inquirer.List(
+        "modo",
+        message="Como deseja configurar os arquivos?",
+        choices=["Usar config.txt", "Inserir manualmente"]
+    )
+])["modo"]
+
 adapters = ifaddr.get_adapters()
 server_ip = 0
 
-config_file = "C:\\Users\\Larissa Rocha\\Documents\\GitHub\\Decoder\\decoder\\config.txt"
+##################################################
+if opcao == "Usar config.txt":
+    config_file = "C:\\Users\\Larissa Rocha\\Documents\\GitHub\\Decoder\\decoder\\config.txt"
 
-# Função para carregar configurações do arquivo config.txt
-def carregar_configuracao(arquivo):
-    configuracoes = {}
-    if os.path.exists(arquivo):
-        with open(arquivo, "r") as f:
-            for linha in f:
-                if "=" in linha:
-                    chave, valor = linha.strip().split("=", 1)
-                    configuracoes[chave] = valor
-    return configuracoes
+    # Função para carregar configurações do arquivo config.txt
+    def carregar_configuracao(arquivo):
+        configuracoes = {}
+        if os.path.exists(arquivo):
+            with open(arquivo, "r") as f:
+                for linha in f:
+                    if "=" in linha:
+                        chave, valor = linha.strip().split("=", 1)
+                        configuracoes[chave] = valor
+        return configuracoes
 
-# Nome do arquivo de configuração
-config = carregar_configuracao(config_file)
 
-# Verificar se a VPN está ativa
-server_ip = 0  # Valor padrão
-for adapter in adapters:
-    if adapter.nice_name == "SonicWall_NetExtender_SSL Tunnel":
-        server_ip = adapter.ips[1].ip
-        print("VPN está ativa no IP {}".format(server_ip))
+    # Nome do arquivo de configuração
+    config = carregar_configuracao(config_file)
 
-if server_ip == 0:
-    print("VPN não está ativada.")
-    exit()
+    # Verificar se a VPN está ativa
+    server_ip = 0  # Valor padrão
+    for adapter in adapters:
+        if adapter.nice_name == "SonicWall_NetExtender_SSL Tunnel":
+            server_ip = adapter.ips[1].ip
+            print("VPN está ativa no IP {}".format(server_ip))
 
-# Obter a porta do arquivo de configuração ou solicitar ao usuário
-if "server_port" in config:
-    server_port = int(config["server_port"])
-    print(f"Porta carregada do arquivo: {server_port}")
-else:
-    server_port = int(input("Digite a porta de comunicação: "))
-    if server_port > 65535 or server_port < 0:
-        print("Porta inválida")
+    if server_ip == 0:
+        print("VPN não está ativada.")
         exit()
 
 
+    # Obter a porta do arquivo de configuração ou solicitar ao usuário
+    if "server_port" in config:
+        server_port = int(config["server_port"])
+        print(f"Porta carregada do arquivo: {server_port}")
+    else:
+        server_port = int(input("Digite a porta de comunicação: "))
+        if server_port > 65535 or server_port < 0:
+            print("Porta inválida")
+            exit()
 
-# for adapter in adapters:
-#     if adapter.nice_name == "SonicWall_NetExtender_SSL Tunnel":
-#         server_ip = adapter.ips[1].ip
-#         print("VPN está ativa no IP {}".format(server_ip))
-# if server_ip == 0:
-#     print("VPN não está ativada.")
-#     exit()
 
-# if debug == 0:
-#     server_port = int(input("Digite a porta de comunicação: "))
-#     if server_port > 65535 or server_port < 0:
-#         print("Porta inválida")
-#         exit()
-# else:
-#     server_port = 9117
-#     #server_port = 10000
+    log_directory_payload = "logs/payload/"
+    log_directory_decoded = "logs/decoded/"
+    os.makedirs(log_directory_payload, exist_ok=True)  # Cria a pasta se não existir
+    os.makedirs(log_directory_decoded, exist_ok=True)  # Cria a pasta se não existir
 
-log_directory = "logs/"
-os.makedirs(log_directory, exist_ok=True)  # Cria a pasta se não existir
+    payload_file_name = config.get("payload_file", "")
+    decoded_file_name = config.get("decoded_file", "")
 
-if sem_log == 0:
-    logDecision = int(input("Deseja criar um log? (1-Sim; 0-Não): "))
-    if logDecision != 1:
+    logDecision = input("Deseja criar um log? Enter para sim ")
+    if logDecision != "":
         logDecision = 0
         print("Não será criado um log.")
         payload_file_name = ""
         decoded_file_name = ""
     else:
+        logDecision = 1
         #val = input("Digite o nome do arquivo de log a ser criado: ")
-        payload_file_name = os.path.join(log_directory, "ttff_raw.csv")
-        decoded_file_name = os.path.join(log_directory, "ttff_decoded.csv")
-        #payload_file_name = "log_raw.csv"
+        payload_file_name = os.path.join(log_directory_payload, payload_file_name)
+        decoded_file_name = os.path.join(log_directory_decoded, decoded_file_name)
+        #payload_file_name = "log_raw.csv" 
+#################################################################################
 else:
-    logDecision = 0
-    payload_file_name = ""
-    decoded_file_name = ""
+    server_port = int(input("Digite a porta de comunicação: "))
+    if server_port > 65535 or server_port < 0:
+        print("Porta inválida")
+        exit()
+    else:
+        server_port = 9117
+        #server_port = 10000
+    log_directory = "logs/"
+    os.makedirs(log_directory, exist_ok=True)  # Cria a pasta se não existir
+    if sem_log == 0:
+        logDecision = int(input("Deseja criar um log? (1-Sim; 0-Não): "))
+        if logDecision != 1:
+            logDecision = 0
+            print("Não será criado um log.")
+            payload_file_name = ""
+            decoded_file_name = ""
+        else:
+            val = input("Digite o nome do arquivo de log a ser criado: ")
+            payload_file_name = os.path.join(log_directory, val + "_raw.csv")
+            decoded_file_name = os.path.join(log_directory, val + "_decoded.csv")
+            #payload_file_name = "log_raw.csv"
+    else:
+        logDecision = 0
+        payload_file_name = ""
+        decoded_file_name = ""
 
+##########################################################################
 try:
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server.bind((server_ip, server_port))
@@ -145,7 +169,7 @@ if logDecision == 1:
 print("Server iniciado no IP {} e porta {}".format(server_ip,server_port))
 
 threading.Thread(target=worker, daemon=True).start()
-
+buffer_count = 0
 while True:
     message, address = server.recvfrom(1024)
     data = binascii.hexlify(message).decode()
@@ -174,7 +198,7 @@ while True:
         server.sendto(str.encode(msg_to_send,"utf-8"), address)
         if logDecision == 1:
             record_raw(payload_file_name,"S",msg_to_send)
-            record_decoded(decoded_file_name,",,,,HBD")
+            record_decoded(decoded_file_name,f",,,0x{count_number},HBD")
     elif message_prefix == ackPrefix:
         print("+ACK")
         size = len(data)
@@ -187,10 +211,14 @@ while True:
         if logDecision == 1:
             record_raw(payload_file_name, "S", msg_to_send)
             record_decoded(decoded_file_name,",,,,ACK")
-    elif plus_sign == plusPrefix:
+    elif plus_sign == plusPrefix: 
         if data[2:4] == bChar: # B
             buffer = True
+            buffer_count += 1
             print("Buffer: Sim")
+            print(f"Mensagens em buffer até agora: {buffer_count}")
+            if buffer_count == 10000:
+                print("A partir daqui as mensagens ultrapassam o limite de capacidade")
         else:
             buffer = False
             print("Buffer: Não")
