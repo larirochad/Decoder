@@ -1,43 +1,11 @@
 import pandas as pd
 import inquirer
-import os
-
-# def selecionar_arquivo():
-#     caminho_csv = 'C:\\Users\\Larissa Rocha\\Documents\\GitHub\\Decoder\\decoder\\logs'
-    
-#     if not os.path.exists(caminho_csv):
-#         print(f"Diretório não encontrado: {caminho_csv}")
-#         exit()
-    
-#     arquivos = [f for f in os.listdir(caminho_csv) if f.lower().endswith(".csv")]
-    
-#     if not arquivos:
-#         print("Nenhum arquivo CSV encontrado no diretório.")
-#         exit()
-    
-#     opcoes = ["🔤 Digitar o nome do arquivo"] + arquivos
-    
-#     escolha = inquirer.prompt([
-#         inquirer.List("arquivo", 
-#                      message="Escolha um arquivo ou digite um nome:", 
-#                      choices=opcoes)
-#     ])["arquivo"]
-    
-#     if escolha == "🔤 Digitar o nome do arquivo":
-#         nome_digitado = input("Digite o nome do arquivo (com .csv): ").strip()
-#         if nome_digitado not in arquivos:
-#             print("Arquivo não encontrado na pasta.")
-#             exit()
-#         arquivo_final = nome_digitado
-#     else:
-#         arquivo_final = escolha
-    
-#     return os.path.join(caminho_csv, arquivo_final)
-
+import tkinter as tk
+from tkinter import filedialog
+import os 
 
 def verificar_sequencia(caminho_arquivo):
     try:
-        # Tentar ler com diferentes codificações
         codificacoes = ['utf-8', 'latin-1', 'iso-8859-1', 'cp1252']
         for encoding in codificacoes:
             try:
@@ -50,7 +18,7 @@ def verificar_sequencia(caminho_arquivo):
             return None
 
         df.columns = df.columns.str.strip().str.lower()
-        if 'sequência' not in df.columns and 'sequencia' not in df.columns:
+        if 'sequência' not in df.columns:
             coluna_seq = next((col for col in df.columns if 'seq' in col), None)
             if not coluna_seq:
                 print("Erro: Nenhuma coluna de sequência encontrada.")
@@ -70,82 +38,119 @@ def verificar_sequencia(caminho_arquivo):
 
         # Converter para valores numéricos para ordenação
         df_clean['num_valor'] = df_clean[coluna_seq].apply(lambda x: int(x[2:], 16))
-        
-        
-        # Ordenar os dados em ordem crescente pelos valores numéricos
         df_clean = df_clean.sort_values(by='num_valor').reset_index(drop=True)
-        
+
         valores = df_clean[coluna_seq].tolist()
         indices = df_clean.index.tolist()
+        numeros = df_clean['num_valor'].tolist()
 
+        #LISTA DE PROBLEMAS 
+        problemas_ordem = []
+        problemas_repetidos = []
+        problemas_salto = []
 
-        # Verificação da sequência (string baseada, confiável com 2 bytes)
-        problemas = []
-        for i in range(len(valores) - 1):
-            atual = valores[i]
-            proximo = valores[i + 1]
-            if atual >= proximo:
-                tipo_anterior = df_clean.iloc[i].get('tipo mensagem', 'N/D')
-                tipo_proximo = df_clean.iloc[i + 1].get('tipo mensagem', 'N/D')
-                problemas.append({
+        for i in range(len(numeros) - 1):
+            atual_valor = numeros[i]
+            proximo_valor = numeros[i + 1]
+            atual_hex = valores[i]
+            proximo_hex = valores[i + 1]
+
+            tipo_anterior = df_clean.iloc[i].get('tipo mensagem', 'N/D')
+            tipo_proximo = df_clean.iloc[i + 1].get('tipo mensagem', 'N/D')
+
+            if atual_valor > proximo_valor:
+                problemas_ordem.append({
                     'linha': indices[i + 1] + 2,
-                    'valor_anterior': atual,
-                    'valor_proximo': proximo,
+                    'valor_anterior': atual_hex,
+                    'valor_proximo': proximo_hex,
+                    'tipo_anterior': tipo_anterior,
+                    'tipo_proximo': tipo_proximo
+                })
+            elif atual_valor == proximo_valor:
+                problemas_repetidos.append({
+                    'linha': indices[i + 1] + 2,
+                    'valor_anterior': atual_hex,
+                    'valor_proximo': proximo_hex,
+                    'tipo_anterior': tipo_anterior,
+                    'tipo_proximo': tipo_proximo
+                })
+            elif proximo_valor != atual_valor + 1:
+                problemas_salto.append({
+                    'linha': indices[i + 1] + 2,
+                    'valor_anterior': atual_hex,
+                    'valor_proximo': proximo_hex,
                     'tipo_anterior': tipo_anterior,
                     'tipo_proximo': tipo_proximo
                 })
 
-        # Resultados
-        print("\n=== RESULTADO DA ANÁLISE ===")
-        print(f"Mensagens analisadas: {len(valores)}")
-        print(f"Início da sequência: {valores[0]}")
-        print(f"Fim da sequência:    {valores[-1]}")
-        print(f"Sequência estritamente crescente? {'✅ Sim' if not problemas else '❌ Não'}")
+
+        total_ordem = len(problemas_ordem)
+        total_repetidos = len(problemas_repetidos)
+        total_salto = len(problemas_salto)
+        total_problemas = total_ordem + total_repetidos + total_salto
+
+        if total_problemas:
+            print(f"\n⚠️ Problemas encontrados ({total_problemas}):")
+
+            if total_repetidos:
+                print(f"\n🟰 Problemas de VALORES REPETIDOS ({total_repetidos}):")
+                for prob in problemas_repetidos:
+                    print(f"Linha {prob['linha']}: Tipo {prob['tipo_anterior']} {prob['valor_anterior']} = {prob['valor_proximo']} Tipo {prob['tipo_proximo']}")
+
+            if total_ordem:
+                print(f"\n🔁 Problemas de ORDEM INCORRETA ({total_ordem}):")
+                for prob in problemas_ordem:
+                    print(f"Linha {prob['linha']}: Tipo {prob['tipo_anterior']} {prob['valor_anterior']} → {prob['valor_proximo']} Tipo {prob['tipo_proximo']}")
+
+            if total_salto:
+                print(f"\n⏭️ Problemas de SALTO NA SEQUÊNCIA ({total_salto}):")
+                for prob in problemas_salto:
+                    print(f"Linha {prob['linha']}: Tipo {prob['tipo_anterior']} {prob['valor_anterior']} → {prob['valor_proximo']} Tipo {prob['tipo_proximo']}")
+
+        salvar = inquirer.prompt([
+                inquirer.List("salvar_csv",
+                            message="Deseja salvar a análise em um arquivo CSV?",
+                            choices=["Não", "Sim"])
+                ])["salvar_csv"]
+
+        if salvar == "Sim":
+            project_base = os.path.dirname(os.path.abspath(__file__)) #onde ta o arquivo
+            target_dir = os.path.abspath(os.path.join(project_base, '..', 'logs/analises')) #volta uma pasta e entra em logs/ e espera o tipo passado pelo teste
         
+        logs = os.path.join(target_dir, logs)
 
-
-        if problemas:
-            print(f"\n⚠️ Problemas encontrados ({len(problemas)}):")
-            for prob in problemas[:5]:
-                print(f"Linha {prob['linha']}: Tipo {prob['tipo_anterior']} {prob['valor_anterior']} → {prob['valor_proximo']} Tipo {prob['tipo_proximo']}")
-            if len(problemas) > 5:
-                print(f"... e mais {len(problemas) - 5} problemas.")
 
         escolha = inquirer.prompt([
-        inquirer.List("arquivo", 
-                     message="Quer analisar os dados em ordem crescente??", 
-                     choices=["Não", "Sim"])
-         ])["arquivo"]
-        
+            inquirer.List("arquivo",
+                          message="Quer analisar os dados em ordem crescente??",
+                          choices=["Não", "Sim"])
+        ])["arquivo"]
+
         if escolha == "Sim":
             print("\n=== DADOS ORDENADOS ===")
             print(df_clean[[coluna_seq, 'num_valor', 'tipo mensagem']].to_string())
-        else: 
-
+        else:
             return {
                 'total': len(valores),
-                'sequencia_ok': not problemas,
-                'problemas': problemas,
+                'sequencia_ok': total_problemas == 0,
+                'problemas_ordem': problemas_ordem,
+                'problemas_salto': problemas_salto,
                 'valores': valores
             }
+
         return {
             'total': len(valores),
-            'sequencia_ok': not problemas,
-            'problemas': problemas,
+            'sequencia_ok': total_problemas == 0,
+            'problemas_ordem': problemas_ordem,
+            'problemas_salto': problemas_salto,
             'valores': valores
         }
+
+
+        
+
+
+
     except Exception as e:
         print(f"Erro inesperado: {str(e)}")
         return None
-    
-# if __name__ == "__main__":
-#     print("=== ANALISADOR DE MENSAGENS EM BUFFER ===")
-#     arquivo = selecionar_arquivo()
-#     print(f"\nArquivo selecionado: {arquivo}")
-    
-#     resultados = verificar_sequencia(arquivo)
-    
-#     if resultados:
-#         print("\nAnálise concluída com sucesso!")
-#     else:
-#         print("\nFalha na análise do arquivo.")

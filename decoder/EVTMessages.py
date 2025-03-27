@@ -876,6 +876,42 @@ def parse_evt_message(d,decoded_file_name,log_flag):
                                               f"{gnss_utc_time},{mcc},{mnc},{lac},{cell_id},0x{current_mileage},"
                                               f"0x{total_mileage},0x{current_hour_meter_count},0x{total_hour_meter_count},"
                                               f"-,{power_on_reason}, -,-")
+        
+        
+        
+        elif EVTMessageTypeList[int(message_type, 16)] == "GTBDS":
+            report_mask = d[10:18]
+            if report_mask == "00fe7fbf":  # Máscara genérica RSP e EVT
+                print("Máscara compatível com 00fe7fbf")
+            else:
+                print("Máscara incompatível com 00fe7fbf")
+            
+            
+            count_number = d[size - 12:(size - 8) - size]
+
+            print("Report Mask: " + report_mask)
+            print("count Number" + count_number )
+        
+            if log_flag == 1:
+                    record_decoded(decoded_file_name, f"-, -, -, 0x{count_number},{EVTMessageTypeList[int(message_type, 16)]}, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -")
+
+
+        elif EVTMessageTypeList[int(message_type, 16)] == "GTBCS":
+            report_mask = d[10:18]
+            if report_mask == "00fe7fbf":  # Máscara genérica RSP e EVT
+                print("Máscara compatível com 00fe7fbf")
+            else:
+                print("Máscara incompatível com 00fe7fbf")
+            
+            
+            count_number = d[size - 12:(size - 8) - size]
+
+            print("Report Mask: " + report_mask)
+            print("count Number" + count_number )
+            
+            if log_flag == 1:
+                    record_decoded(decoded_file_name, f"-, -, -, 0x{count_number},{EVTMessageTypeList[int(message_type, 16)]}, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -")
+
         else:
             if log_flag == 1:
                 record_decoded(decoded_file_name,",,,," + EVTMessageTypeList[int(message_type, 16)])

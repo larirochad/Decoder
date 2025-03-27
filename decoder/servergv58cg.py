@@ -71,7 +71,9 @@ if opcao == "Usar config.txt":
     # Verificar se a VPN está ativa
     server_ip = 0  # Valor padrão
     for adapter in adapters:
-        if adapter.nice_name == "SonicWall_NetExtender_SSL Tunnel":
+      #  print(f"Adaptador encontrado: {adapter.nice_name}")  # para ver os nones das vpns
+
+        if adapter.nice_name == "Wintun Userspace Tunnel":
             server_ip = adapter.ips[1].ip
             print("VPN está ativa no IP {}".format(server_ip))
 
@@ -210,7 +212,7 @@ while True:
         server.sendto(str.encode(msg_to_send, "utf-8"), address)
         if logDecision == 1:
             record_raw(payload_file_name, "S", msg_to_send)
-            record_decoded(decoded_file_name,",,,,ACK")
+            record_decoded(decoded_file_name,f",,,0x{count_number},ACK")
     elif plus_sign == plusPrefix: 
         if data[2:4] == bChar: # B
             buffer = True

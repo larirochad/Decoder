@@ -3,51 +3,29 @@ import os
 from buffer import *
 from sequency import *
 from time_fix import *
+from tkinter import filedialog
 
 
-def selecionar_arquivo(tipo):
-    if tipo == "decoded":
-        caminho_csv = 'C:\\Users\\Larissa Rocha\\Documents\\GitHub\\Decoder\\decoder\\logs\\decoded'
-    if tipo == "payload":
-        caminho_csv = 'C:\\Users\\Larissa Rocha\\Documents\\GitHub\\Decoder\\decoder\\logs\\payload'
-
-    if not os.path.exists(caminho_csv):
-        print(f"Diretório não encontrado: {caminho_csv}")
-        exit()
-
-    arquivos = [
-        f for f in os.listdir(caminho_csv)
-        if f.lower().endswith(".csv") 
-    ]
-
-    if not arquivos:
-        print(f"Nenhum arquivo CSV com filtro encontrado.")
-        exit()
-
-    opcoes = ["🔤 Digitar o nome do arquivo"] + arquivos
+def selecionar_pasta(tipo):
     
-    escolha = inquirer.prompt([
-        inquirer.List("arquivo", 
-                     message="Escolha um arquivo ou digite um nome", 
-                     choices=opcoes)
-    ])["arquivo"]
-    
-    if escolha == "🔤 Digitar o nome do arquivo":
-        nome_digitado = input("Digite o nome do arquivo (com .csv): ").strip()
-        if nome_digitado not in arquivos:
-            print("Arquivo não encontrado na pasta ou não bate com o filtro.")
-            exit()
-        arquivo_final = nome_digitado
-    else:
-        arquivo_final = escolha
-    
-    return os.path.join(caminho_csv, arquivo_final)
+    project_base = os.path.dirname(os.path.abspath(__file__)) #onde ta o arquivo
+    target_dir = os.path.abspath(os.path.join(project_base, '..', 'logs', tipo)) #volta uma pasta e entra em logs/ e espera o tipo passado pelo teste
+ 
+    file_path = filedialog.askopenfilename( #abre a pasta
+        initialdir=target_dir,
+        filetypes=[("CSV files", "*.csv")] 
+    )
+
+    return file_path  
+
 
 def seleciona_analise():
-    caminho_teste = 'C:\\Users\\Larissa Rocha\\Documents\\GitHub\\Decoder\\decoder\\pesquisas'
-    
-    testes = [f for f in os.listdir(caminho_teste) 
-              if f.lower().endswith(".py") and f != "selecionador.py"
+
+    project_base = os.path.dirname(os.path.abspath(__file__)) #onde ta o arquivo
+    target_dir = os.path.abspath(os.path.join(project_base, '..', 'pesquisas')) #volta uma pasta e entra em logs/ e espera o tipo passado pelo teste
+
+    testes = [f for f in os.listdir(target_dir) 
+              if f.lower().endswith(".py") and f != "selecionador.py" #filtro para noa mostrar esse arquivo
     ] 
     
     opcao = inquirer.prompt([
@@ -66,16 +44,16 @@ while True:
     
     # Escolhendo filtro com base no teste
     if teste == "buffer.py":
-        arquivo = selecionar_arquivo("payload")
+        arquivo = selecionar_pasta("payload")
         print(f"\nArquivo selecionado: {arquivo}")
         analisar_mensagens_buffer(arquivo)
 
     elif teste == "sequency.py":
-        arquivo = selecionar_arquivo("decoded")
+        arquivo = selecionar_pasta("decoded")
         print(f"\nArquivo selecionado: {arquivo}")
         verificar_sequencia(arquivo)
     
     elif teste == "time_fix.py":
-        arquivo = selecionar_arquivo("decoded")
+        arquivo = selecionar_pasta("decoded")
         print(f"\nArquivo selecionado: {arquivo}")
         analyze_gnss_fix_time(arquivo)
