@@ -1,7 +1,7 @@
 import inquirer
 import os
 from buffer import *
-from sequency import *
+from sequence import *
 from time_fix import *
 from tkinter import filedialog
 
@@ -48,7 +48,7 @@ while True:
         print(f"\nArquivo selecionado: {arquivo}")
         analisar_mensagens_buffer(arquivo)
 
-    elif teste == "sequency.py":
+    elif teste == "sequence.py":
         arquivo = selecionar_pasta("decoded")
         print(f"\nArquivo selecionado: {arquivo}")
         verificar_sequencia(arquivo)

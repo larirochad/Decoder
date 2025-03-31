@@ -1,3 +1,4 @@
+
 from recordMessages import *
 from datetime import datetime
 
@@ -42,6 +43,12 @@ def calcular_diferenca_tempo(send_time):
     hora = int(send_time[8:10], 16)
     minuto = int(send_time[10:12], 16)
     segundo = int(send_time[12:14], 16)
+
+    # Validação simples para ignorar casos com valores 0
+    if ano == 0 or mes == 0 or dia == 0:
+        print("Data com valores inválidos (zero). Ignorando cálculo de tempo.")
+        return None
+
 
     new_time = datetime(ano, mes, dia, hora, minuto, segundo)
 
@@ -271,8 +278,8 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
             p += 2
             battery_level = int(d[p:p + 2], 16)
             p += 2
-            # external_power_voltage = int(d[p:p + 4], 16)
-            # p += 4
+            external_power_voltage = int(d[p:p + 4], 16)
+            p += 4
             analog_input_mode = d[p:p + 4]
             p += 4
             #analog_input1_voltage = d[p:p + 4]
@@ -402,7 +409,7 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
                 diffON = diff  
                 print(f"IGN: diferença de tempo: {diffON} segundos")
 
-            elif motion_prefix == "1":  # Veículo desligado (IGF)
+            elif motion_prefix == "1":  # 9Veículo desligado (IGF)
                 diffOFF = diff
                 print(f"IGF: diferença de tempo: {diffOFF} segundos")
 
@@ -423,7 +430,7 @@ def parse_rsp_message(d,decoded_file_name,log_flag):
                                               f"{min.zfill(2)}:{seg.zfill(2)},{imei},0x{count_number},"
                                               f"{RSPMessageTypeList[int(message_type, 16)]},"
                                               f"0x{report_mask},{device_type},0x{protocol_version},0x{firmware_version},"
-                                              f"{battery_level},-,{analog_input_mode},-,"
+                                              f"{battery_level},{external_power_voltage },{analog_input_mode},-,"
                                               f"{digital_input_status},{digital_output_status},"
                                               f"{motion_status},{satellites_in_use},-,"
                                               f"{gnss_accuracy},{speed},{azimuth},0x{altitude},"

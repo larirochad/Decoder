@@ -1,8 +1,6 @@
 import pandas as pd
 import inquirer
-import tkinter as tk
-from tkinter import filedialog
-import os 
+
 
 def verificar_sequencia(caminho_arquivo):
     try:
@@ -106,18 +104,21 @@ def verificar_sequencia(caminho_arquivo):
                 print(f"\n⏭️ Problemas de SALTO NA SEQUÊNCIA ({total_salto}):")
                 for prob in problemas_salto:
                     print(f"Linha {prob['linha']}: Tipo {prob['tipo_anterior']} {prob['valor_anterior']} → {prob['valor_proximo']} Tipo {prob['tipo_proximo']}")
+        else:
+            print("\n✅ Nenhum problema encontrado na sequência!\n")
 
-        salvar = inquirer.prompt([
-                inquirer.List("salvar_csv",
-                            message="Deseja salvar a análise em um arquivo CSV?",
-                            choices=["Não", "Sim"])
-                ])["salvar_csv"]
 
-        if salvar == "Sim":
-            project_base = os.path.dirname(os.path.abspath(__file__)) #onde ta o arquivo
-            target_dir = os.path.abspath(os.path.join(project_base, '..', 'logs/analises')) #volta uma pasta e entra em logs/ e espera o tipo passado pelo teste
+        # salvar = inquirer.prompt([
+        #         inquirer.List("salvar_csv",
+        #                     message="Deseja salvar a análise em um arquivo CSV?",
+        #                     choices=["Não", "Sim"])
+        #         ])["salvar_csv"]
+
+        # if salvar == "Sim":
+        #     project_base = os.path.dirname(os.path.abspath(__file__)) #onde ta o arquivo
+        #     target_dir = os.path.abspath(os.path.join(project_base, '..', 'logs/analises')) #volta uma pasta e entra em logs/ e espera o tipo passado pelo teste
         
-        logs = os.path.join(target_dir, logs)
+        # logs = os.path.join(target_dir, logs)
 
 
         escolha = inquirer.prompt([

@@ -51,9 +51,9 @@ server_ip = 0
 
 ##################################################
 if opcao == "Usar config.txt":
-    config_file = "C:\\Users\\Larissa Rocha\\Documents\\GitHub\\Decoder\\decoder\\config.txt"
-
-    # Função para carregar configurações do arquivo config.txt
+    project_base = (os.path.dirname(os.path.abspath(__file__))) #onde ta o arquivo
+    config_file =  os.path.abspath(os.path.join(project_base, "config.txt", ))
+  
     def carregar_configuracao(arquivo):
         configuracoes = {}
         if os.path.exists(arquivo):
@@ -64,8 +64,6 @@ if opcao == "Usar config.txt":
                         configuracoes[chave] = valor
         return configuracoes
 
-
-    # Nome do arquivo de configuração
     config = carregar_configuracao(config_file)
 
     # Verificar se a VPN está ativa
