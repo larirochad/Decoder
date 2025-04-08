@@ -34,8 +34,7 @@ def verificar_sequencia(caminho_arquivo):
             lambda x: '0x' + x[-4:].zfill(4) if not x.startswith('0x') else '0x' + x[2:].zfill(4)
         )
 
-        # Converter para valores numéricos para ordenação
-        df_clean['num_valor'] = df_clean[coluna_seq].apply(lambda x: int(x[2:], 16))
+        df_clean['num_valor'] = df_clean[coluna_seq].apply(lambda x: int(x[2:], 16)) # para inteiro
         df_clean = df_clean.sort_values(by='num_valor').reset_index(drop=True)
 
         valores = df_clean[coluna_seq].tolist()
@@ -56,7 +55,7 @@ def verificar_sequencia(caminho_arquivo):
             tipo_anterior = df_clean.iloc[i].get('tipo mensagem', 'N/D')
             tipo_proximo = df_clean.iloc[i + 1].get('tipo mensagem', 'N/D')
 
-            if atual_valor > proximo_valor:
+            if atual_valor > proximo_valor: # para fora de ordem
                 problemas_ordem.append({
                     'linha': indices[i + 1] + 2,
                     'valor_anterior': atual_hex,
@@ -64,7 +63,7 @@ def verificar_sequencia(caminho_arquivo):
                     'tipo_anterior': tipo_anterior,
                     'tipo_proximo': tipo_proximo
                 })
-            elif atual_valor == proximo_valor:
+            elif atual_valor == proximo_valor: #igual
                 problemas_repetidos.append({
                     'linha': indices[i + 1] + 2,
                     'valor_anterior': atual_hex,
@@ -72,7 +71,7 @@ def verificar_sequencia(caminho_arquivo):
                     'tipo_anterior': tipo_anterior,
                     'tipo_proximo': tipo_proximo
                 })
-            elif proximo_valor != atual_valor + 1:
+            elif proximo_valor != atual_valor + 1: #(salto)
                 problemas_salto.append({
                     'linha': indices[i + 1] + 2,
                     'valor_anterior': atual_hex,
@@ -146,11 +145,6 @@ def verificar_sequencia(caminho_arquivo):
             'problemas_salto': problemas_salto,
             'valores': valores
         }
-
-
-        
-
-
 
     except Exception as e:
         print(f"Erro inesperado: {str(e)}")

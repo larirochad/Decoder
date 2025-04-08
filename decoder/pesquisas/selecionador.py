@@ -4,6 +4,7 @@ from buffer import *
 from sequence import *
 from time_fix import *
 from tkinter import filedialog
+from wathdog import *
 
 
 def selecionar_pasta(tipo):
@@ -57,3 +58,8 @@ while True:
         arquivo = selecionar_pasta("decoded")
         print(f"\nArquivo selecionado: {arquivo}")
         analyze_gnss_fix_time(arquivo)
+ 
+    elif teste == "watchdog.py":
+        arquivo = selecionar_pasta("decoded")
+        print(f"\nArquivo selecionado: {arquivo}")
+        analise_watchdog(arquivo)        

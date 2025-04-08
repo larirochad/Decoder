@@ -1,5 +1,5 @@
 server_port=9117
 sem_log=0
-payload_file=DOG_payload.csv
-decoded_file=DOG_decoded.csv
+payload_file=what_dog_payload.csv
+decoded_file=what_dog_decoded.csv
 
