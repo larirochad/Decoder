@@ -93,8 +93,8 @@ if opcao == "Usar config.txt":
 
     log_directory_payload = "logs/payload/"
     log_directory_decoded = "logs/decoded/"
-    os.makedirs(log_directory_payload, exist_ok=True)  # Cria a pasta se não existir
-    os.makedirs(log_directory_decoded, exist_ok=True)  # Cria a pasta se não existir
+    os.makedirs(log_directory_payload, exist_ok=True)  
+    os.makedirs(log_directory_decoded, exist_ok=True)  
 
     payload_file_name = config.get("payload_file", "")
     decoded_file_name = config.get("decoded_file", "")
@@ -163,7 +163,7 @@ if logDecision == 1:
                     "Digital Output Status,Motion Status,Satélites, Report type, Duração da Ignição,Precisão GNSS,"
                     "Velocidade,Azimuth,Altitude,Latitude,Longitude,GNSS UTC Time,MCC,MNC,LAC,Cell ID,"
                     "Hodômetro Atual,Hodômetro Total,Horímetro Atual,Horímetro Total,Motivo Power Off,"
-                    "Motivo Power On, Diferença dos tempos a partir do IGN, Diferença de tempos a partir do IGF, Time fix\n")
+                    "Motivo Power On, Diferença dos tempos a partir do IGN, Diferença de tempos a partir do IGF, Time fix, 1-wire, ble, RAT, Band\n")
             d.close()
 
 print("Server iniciado no IP {} e porta {}".format(server_ip,server_port))
@@ -243,6 +243,7 @@ while True:
                 record_raw(payload_file_name, "S", msg_to_send)
         elif data[4:8] == crdPrefix:  # RD
             print("Group: Data Flow Report")
+        
             print(date_time + "S," + msg_to_send)
             server.sendto(str.encode(msg_to_send, "utf-8"), address)
             if logDecision == 1:

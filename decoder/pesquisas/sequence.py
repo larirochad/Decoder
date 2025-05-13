@@ -65,7 +65,7 @@ def verificar_sequencia(caminho_arquivo):
                 })
             elif atual_valor == proximo_valor: #igual
                 problemas_repetidos.append({
-                    'linha': indices[i + 1] + 2,
+                    'linha': indices[i + 1] + 2,    
                     'valor_anterior': atual_hex,
                     'valor_proximo': proximo_hex,
                     'tipo_anterior': tipo_anterior,

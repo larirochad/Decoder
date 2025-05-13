@@ -106,7 +106,7 @@ def parse_evt_message(d,decoded_file_name,log_flag):
         p += 2
         motion_status = d[p:p + 2]
         p += 2
-        satellites_in_use = d[p:p + 2]
+        satellites_in_use = int(d[p:p + 2], 16)
         p += 2
         #report_id = d[p:p + 2]
         #p += 2
@@ -114,8 +114,11 @@ def parse_evt_message(d,decoded_file_name,log_flag):
         p += 2
         gnss_accuracy = d[p:p + 2]
         p += 2
-        speed = d[p:p + 6]
+        speed_total = d[p:p + 6]
         p += 6
+        speed_dec = int(speed_total[:4], 16)
+        speed_frac = int(speed_total[4:], 16)
+        speed = speed_dec + (speed_frac/10)
         azimuth = d[p:p + 4]
         p += 4
         altitude = d[p:p + 4]
@@ -144,14 +147,40 @@ def parse_evt_message(d,decoded_file_name,log_flag):
         p += 8
         reserved = d[p:p + 2]
         p += 2
-        current_mileage = d[p:p + 6]
-        p += 6
-        total_mileage = d[p:p + 10]
-        p += 10
-        current_hour_meter_count = d[p:p + 6]
-        p += 6
-        total_hour_meter_count = d[p:p + 12]
-        p += 12
+        current_mileage1 = int(d[p:p + 4], 16)
+        p += 4
+        current_mileage2 = int(d[p:p + 2], 16)
+        p += 2
+        current_mileage = current_mileage1 + (current_mileage2 / 10)
+        total_mileage1 = int(d[p:p + 8], 16)
+        p += 8
+        total_mileage2 = int(d[p:p + 2], 16)
+        p += 2
+        total_mileage = total_mileage1 + (total_mileage2 / 10)
+        current_hour_meter_count_hh = str(int(d[p:p + 2], 16))
+        p += 2
+        current_hour_meter_count_mm = str(int(d[p:p + 2], 16))
+        p += 2
+        current_hour_meter_count_ss = str(int(d[p:p + 2], 16))
+        p += 2
+        current_hour_meter_count = (f"{current_hour_meter_count_hh}:{current_hour_meter_count_mm.zfill(2)}:"
+                                    f"{current_hour_meter_count_ss.zfill(2)}")
+        total_hour_meter_count_hh = str(int(d[p:p + 8], 16))
+        p += 8
+        total_hour_meter_count_mm = str(int(d[p:p + 2], 16))
+        p += 2
+        total_hour_meter_count_ss = str(int(d[p:p + 2], 16))
+        p += 2
+        total_hour_meter_count = (f"{total_hour_meter_count_hh}:{total_hour_meter_count_mm.zfill(2)}:"
+                                    f"{total_hour_meter_count_ss.zfill(2)}")
+
+        id_length = d[p:p + 2]
+        p += 2
+        if int(id_length, 16) != 0:
+            id = d[p:p + (int(id_length, 16) * 2)]
+            p += int(id_length, 16) * 2
+        else:
+            id = "0"
         send_time = d[p:p + 14]
         p += 14
 
@@ -170,10 +199,10 @@ def parse_evt_message(d,decoded_file_name,log_flag):
         print("Digital Input Status: " + digital_input_status)
         print("Digital Output Status: " + digital_output_status)
         print("Motion Status: " + motion_status)
-        print("Satellites in Use: " + satellites_in_use)
+        print("Satellites in Use: " + str(satellites_in_use))
         print("Number: " + number)
         print("GNSS Accuracy: " + gnss_accuracy)
-        print("Speed: " + speed)
+        print("Speed: " + str(speed))
         print("Azimuth: " + azimuth)
         print("Altitude: " + altitude)
         print("Longitude: " + longitude)
@@ -189,10 +218,10 @@ def parse_evt_message(d,decoded_file_name,log_flag):
         print("MNC: " + mnc)
         print("LAC: " + lac)
         print("Cell ID: " + cell_id)
-        print("Current Mileage: " + current_mileage)
-        print("Total Mileage: " + total_mileage)
-        print("Current Hour Meter Count: " + current_hour_meter_count)
-        print("Total Hour Meter Count: " + total_hour_meter_count)
+        print("Current Mileage: " + str(current_mileage))
+        print("Total Mileage: " + str(total_mileage))
+        print("Current Hour Meter Count: " + str(current_hour_meter_count))
+        print("Total Hour Meter Count: " + str(total_hour_meter_count))
         dia = str(int(send_time[6:8], 16))
         mes = str(int(send_time[4:6], 16))
         ano = str(int(send_time[0:4], 16))
@@ -272,7 +301,7 @@ def parse_evt_message(d,decoded_file_name,log_flag):
             p += 2
             motion_status = d[p:p + 2]
             p += 2
-            satellites_in_use = d[p:p + 2]
+            satellites_in_use = int(d[p:p + 2], 16)
             p += 2
             duration_of_ignition = str(int(d[p:p+8],16)) #segundos
             p+=8
@@ -310,14 +339,40 @@ def parse_evt_message(d,decoded_file_name,log_flag):
             p += 8
             reserved = d[p:p + 2]
             p += 2
-            current_mileage = d[p:p + 6]
-            p += 6
-            total_mileage = d[p:p + 10]
-            p += 10
-            current_hour_meter_count = d[p:p + 6]
-            p += 6
-            total_hour_meter_count = d[p:p + 12]
-            p += 12
+            current_mileage1 = int(d[p:p + 4], 16)
+            p += 4
+            current_mileage2 = int(d[p:p + 2], 16)
+            p += 2
+            current_mileage = current_mileage1 + (current_mileage2 / 10)
+            total_mileage1 = int(d[p:p + 8], 16)
+            p += 8
+            total_mileage2 = int(d[p:p + 2], 16)
+            p += 2
+            total_mileage = total_mileage1 + (total_mileage2 / 10)
+            current_hour_meter_count_hh = str(int(d[p:p + 2], 16))
+            p += 2
+            current_hour_meter_count_mm = str(int(d[p:p + 2], 16))
+            p += 2
+            current_hour_meter_count_ss = str(int(d[p:p + 2], 16))
+            p += 2
+            current_hour_meter_count = (f"{current_hour_meter_count_hh}:{current_hour_meter_count_mm.zfill(2)}:"
+                                        f"{current_hour_meter_count_ss.zfill(2)}")
+            total_hour_meter_count_hh = str(int(d[p:p + 8], 16))
+            p += 8
+            total_hour_meter_count_mm = str(int(d[p:p + 2], 16))
+            p += 2
+            total_hour_meter_count_ss = str(int(d[p:p + 2], 16))
+            p += 2
+            total_hour_meter_count = (f"{total_hour_meter_count_hh}:{total_hour_meter_count_mm.zfill(2)}:"
+                                        f"{total_hour_meter_count_ss.zfill(2)}")
+
+            id_length = d[p:p + 2]
+            p += 2
+            if int(id_length, 16) != 0:
+                id = d[p:p + (int(id_length, 16) * 2)]
+                p += int(id_length, 16) * 2
+            else:
+                id = "0"
             send_time = d[p:p + 14]
             p += 14
 
@@ -336,7 +391,7 @@ def parse_evt_message(d,decoded_file_name,log_flag):
             print("Digital Input Status: " + digital_input_status)
             print("Digital Output Status: " + digital_output_status)
             print("Motion Status: " + motion_status)
-            print("Satellites in Use: " + satellites_in_use)
+            print("Satellites in Use: " + str(satellites_in_use))
             print("Duration of Ignition: " + duration_of_ignition)
             print("Number: " + number)
             print("GNSS Accuracy: " + gnss_accuracy)                 
@@ -356,16 +411,17 @@ def parse_evt_message(d,decoded_file_name,log_flag):
             print("MNC: " + mnc)
             print("LAC: " + lac)
             print("Cell ID: " + cell_id)
-            print("Current Mileage: " + current_mileage)
-            print("Total Mileage: " + total_mileage)
-            print("Current Hour Meter Count: " + current_hour_meter_count)
-            print("Total Hour Meter Count: " + total_hour_meter_count)
+            print("Current Mileage: " + str(current_mileage))
+            print("Total Mileage: " + str(total_mileage))
+            print("Current Hour Meter Count: " + str(current_hour_meter_count))
+            print("Total Hour Meter Count: " + str(total_hour_meter_count))
             dia = str(int(send_time[6:8], 16))
             mes = str(int(send_time[4:6], 16))
             ano = str(int(send_time[0:4], 16))
             hora = str(int(send_time[8:10], 16))
             min = str(int(send_time[10:12], 16))
             seg = str(int(send_time[12:14], 16))
+            print("RFID: ", id)
             print(
                 "Send Time: " + send_time + f" | {dia.zfill(2)}/{mes.zfill(2)}/{ano} | {hora.zfill(2)}:{min.zfill(2)}:"
                                             f"{seg.zfill(2)}")
@@ -439,7 +495,7 @@ def parse_evt_message(d,decoded_file_name,log_flag):
             p += 2
             motion_status = d[p:p + 2]
             p += 2
-            satellites_in_use = d[p:p + 2]
+            satellites_in_use = int(d[p:p + 2], 16)
             p += 2
             reserved = d[p:p+2]
             p+=2
@@ -592,7 +648,7 @@ def parse_evt_message(d,decoded_file_name,log_flag):
             p += 2
             motion_status = d[p:p + 2]
             p += 2
-            satellites_in_use = d[p:p + 2]
+            satellites_in_use = int(d[p:p + 2], 16)
             p += 2
             power_off_reason = d[p:p + 2]
             p += 2
@@ -747,7 +803,7 @@ def parse_evt_message(d,decoded_file_name,log_flag):
             p += 2
             motion_status = d[p:p + 2]
             p += 2
-            satellites_in_use = d[p:p + 2]
+            satellites_in_use = int(d[p:p + 2], 16)
             p += 2
             power_on_reason = d[p:p + 2]
             p += 2
@@ -789,50 +845,75 @@ def parse_evt_message(d,decoded_file_name,log_flag):
             p += 8
             reserved = d[p:p + 2]
             p += 2
-            current_mileage = d[p:p + 6]
-            p += 6
-            total_mileage = d[p:p + 10]
-            p += 10
-            current_hour_meter_count = d[p:p + 6]
-            p += 6
-            total_hour_meter_count = d[p:p + 12]
-            p += 12
+            current_mileage1 = int(d[p:p + 4], 16)
+            p += 4
+            current_mileage2 = int(d[p:p + 2], 16)
+            p += 2
+            current_mileage = current_mileage1 + (current_mileage2 / 10)
+            total_mileage1 = int(d[p:p + 8], 16)
+            p += 8
+            total_mileage2 = int(d[p:p + 2], 16)
+            p += 2
+            total_mileage = total_mileage1 + (total_mileage2 / 10)
+            current_hour_meter_count_hh = str(int(d[p:p + 2], 16))
+            p += 2
+            current_hour_meter_count_mm = str(int(d[p:p + 2], 16))
+            p += 2
+            current_hour_meter_count_ss = str(int(d[p:p + 2], 16))
+            p += 2
+            current_hour_meter_count = (f"{current_hour_meter_count_hh}:{current_hour_meter_count_mm.zfill(2)}:"
+                                        f"{current_hour_meter_count_ss.zfill(2)}")
+            total_hour_meter_count_hh = str(int(d[p:p + 8], 16))
+            p += 8
+            total_hour_meter_count_mm = str(int(d[p:p + 2], 16))
+            p += 2
+            total_hour_meter_count_ss = str(int(d[p:p + 2], 16))
+            p += 2
+            total_hour_meter_count = (f"{total_hour_meter_count_hh}:{total_hour_meter_count_mm.zfill(2)}:"
+                                        f"{total_hour_meter_count_ss.zfill(2)}")
+            id_length = d[p:p + 2]
+            p += 2
+            if int(id_length, 16) != 0:
+                id = d[p:p + (int(id_length, 16) * 2)]
+                p += int(id_length, 16) * 2
+            else:
+                id = "0"
             send_time = d[p:p + 14]
             p += 14
-
             print("Report Mask: " + report_mask)
             # print("Device Type: " + device_type)
-            # print("Protocol Version: " + protocol_version)
-            # print("Firmware Version: " + firmware_version)
+            print("Protocol Version: " + protocol_version)
+            print("Firmware Version: " + firmware_version)
             imei = (str(int(unique_id1, 16)) + str(int(unique_id2, 16)) + str(int(unique_id3, 16)) +
                     str(int(unique_id4, 16)) + str(int(unique_id5, 16)) + str(int(unique_id6, 16)) +
                     str(int(unique_id7, 16)) + str(int(unique_id8, 16)))
             print("Unique ID: " + imei)
             print("Battery Level: ", battery_level)
             print("External Power Voltage: ", external_power_voltage)
-            # print("Analog Input Mode: " + analog_input_mode)
-            # print("Analog Input1 Voltage: " + analog_input1_voltage)
-            # print("Digital Input Status: " + digital_input_status)
-            # print("Digital Output Status: " + digital_output_status)
-            # print("Motion Status: " + motion_status)
-            # print("Satellites in Use: " + satellites_in_use)
-            #print("Duration of Ignition: " + duration_of_ignition)
-            # print("Number: " + number)
-            #print("GNSS Accuracy: " + gnss_accuracy)
-            # print("Speed: " + speed)
-            # print("Azimuth: " + azimuth)
-            # print("Altitude: " + altitude)
-            # print("Longitude: " + longitude)
-            # print("Latitude: " + latitude)
+            print("Analog Input Mode: " + analog_input_mode)
+            print("Analog Input1 Voltage: " + analog_input1_voltage)
+            print("Digital Input Status: " + digital_input_status)
+            print("Digital Output Status: " + digital_output_status)
+            print("Motion Status: " + motion_status)
+            print("Satellites in Use: " + str(satellites_in_use))
+            # print("Duration of Ignition: " + duration_of_ignition)
+            print("Number: " + number)
+            print("GNSS Accuracy: " + gnss_accuracy)
+            print("Speed: " + speed)
+            print("Azimuth: " + azimuth)
+            print("Altitude: " + altitude)
+            print("Longitude: " + longitude)
+            print("Latitude: " + latitude)
             print("GNSS UTC Time: " + gnss_utc_time)
-            # print("MCC: " + mcc)
-            # print("MNC: " + mnc)
-            # print("LAC: " + lac)
-            # print("Cell ID: " + cell_id)
-            # print("Current Mileage: " + current_mileage)
-            # print("Total Mileage: " + total_mileage)
-            # print("Current Hour Meter Count: " + current_hour_meter_count)
-            # print("Total Hour Meter Count: " + total_hour_meter_count)
+            print("MCC: " + mcc)
+            print("MNC: " + mnc)
+            print("LAC: " + lac)
+            print("Cell ID: " + cell_id)
+            print("RFID: ", id)
+            print("Current Mileage: " + str(current_mileage))
+            print("Total Mileage: " + str(total_mileage))
+            print("Current Hour Meter Count: " + str(current_hour_meter_count))
+            print("Total Hour Meter Count: " + str(total_hour_meter_count))
             print("Power On Reason: " + power_on_reason)
             dia = str(int(send_time[6:8], 16))
             mes = str(int(send_time[4:6], 16))

@@ -1,5 +1,5 @@
 server_port=9117
 sem_log=0
-payload_file=constelacoes_payload.csv
-decoded_file=constelacoes_decoded.csv
+payload_file=teste_commands.csv
+decoded_file=teste_commands.csv
 
