@@ -163,7 +163,8 @@ if logDecision == 1:
                     "Digital Output Status,Motion Status,Satélites, Report type, Duração da Ignição,Precisão GNSS,"
                     "Velocidade,Azimuth,Altitude,Latitude,Longitude,GNSS UTC Time,MCC,MNC,LAC,Cell ID,"
                     "Hodômetro Atual,Hodômetro Total,Horímetro Atual,Horímetro Total,Motivo Power Off,"
-                    "Motivo Power On, Diferença dos tempos a partir do IGN, Diferença de tempos a partir do IGF, Time fix, 1-wire, ble, RAT, Band\n")
+                    "Motivo Power On, Diferença dos tempos a partir do IGN, Diferença de tempos a partir do IGF, Time fix, 1-wire, ble, RAT, Band,"
+                    "Calibração eixos, Aceleração máxima, Aceleração média, Durção HBM, Calibração X, Calibração Y, Calibração\n")
             d.close()
 
 print("Server iniciado no IP {} e porta {}".format(server_ip,server_port))
